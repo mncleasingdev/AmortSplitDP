@@ -47,15 +47,7 @@
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="navbar-inner">
             <div class="container">
-                <%--<a class="brand" href="http://joelvasallo.com">Joel Vasallo</a>--%>
                 <div class="nav-collapse collapse">
-                    <%--<ul class="nav">
-            	<li><a href="/">Home</a></li>
-                    <li class="active"><a href="/mortgage.html">Mortgage Calculator</a></li>
-                    <li><a href="/scicalc.html">Scientific Calculator</a></li>
-                    <li><a href="/taxcalc.html">1040EZ Tax Calculator</a></li>
-							<li><a href="https://jvasallo.pythonanywhere.com/storefront/default/storefront">StoreFront</a></li>
-                </ul>--%>
                 </div>
                 <!--/.nav-collapse -->
             </div>
@@ -63,14 +55,9 @@
     </div>
 
     <div class="container">
-        <%--      <div class="hero-unit">
-      	<h1>Mortgage Calculator</h1>
-        <p>Fill in the form below to figure out your mortgage!</p>
-      </div>--%>
 
-        <legend>
             <h3>SIMULASI PROGRAM SPLIT DP & SUBSIDI</h3>
-        </legend>
+
         <div class="row-fluid">
             <div class="span4">
                 <div id="mortgage-calc">
@@ -141,19 +128,19 @@
 
                         <label><strong>Uang Muka:</strong></label>
                         <div class="input-prepend">
-                            <input class="span5" id="downp" type="text">
+                            <input class="span2" id="downp" type="text">
                             <span class="add-on">%</span>
                         </div>
 
                         <label><strong>TargetDP:</strong></label>
                         <div class="input-prepend">
-                            <input class="span5" id="targetdp" type="text">
+                            <input class="span2" id="targetdp" type="text">
                             <span class="add-on">%</span>
                         </div>
 
                         <label><strong>Suku Bunga Efektif:</strong></label>
                         <div class="input-append">
-                            <input class="span5" id="interest" type="text" placeholder="Interest Rate">
+                            <input class="span2" id="interest" type="text" placeholder="">
                             <span class="add-on">%</span>
                         </div>
 
@@ -202,17 +189,17 @@
 
                 <label><strong>Target Interest:</strong></label>
                 <div class="input-prepend">
-                    <input class="span5" id="targetinterest" type="text">
+                    <input class="span2" id="targetinterest" type="text">
                     <span class="add-on">%</span>
                 </div>
 
-                <div id="subsidi">
+                <%--<div id="subsidi">
                     <label>Subsidi Split?</label>
                     <input class="span5" id="subsidisplit" type="checkbox">
-                </div>
+                </div>--%>
 
                 <label><strong>Bulan Program DP </strong></label>
-                <select class="span5" id="prgdp">
+                <select class="span5" id="comboA" onchange="getComboA(this)">
                     <option label="0" value="0" selected="selected"></option>
                     <option label="4" value="4"></option>
                     <option label="6" value="6"></option>
@@ -253,20 +240,33 @@
             </div>
         </div>
 
-        <div id="results">
+        <div class="row row-no-gutters">
             <h3 id="amortization-header"></h3>
             <table id="amortization"></table>
+
+            
+            <h3 id="tanggungan-header"></h3>
+            <table id="tanggungansupp"></table>
         </div>
+
 
         <footer>
             <hr>
             <div class="container">
-                <%--<p>Written by <a href="http://joelvasallo.com/">Joel Vasallo</a></p>--%>
             </div>
         </footer>
     </div>
 </body>
 <script>
+
+    //var param = "";
+
+    function getComboA(selectObject) {
+        var value = selectObject.value;
+        //param = selectObject;
+        //console.log(value);
+        calculate_tanggungan(value);
+    }
 
     // Digits to round to
     var ROUND_DIGITS = true;
@@ -326,10 +326,12 @@
             var monthly_mortgage = parseFloat(loan_amount * (top_val / bot_val)).toFixed(DIGIT_PRECISION);
         } else {
             var monthly_mortgage = parseFloat(loan_amount * (top_val / bot_val));
-       } 
+        } 
 
         calculate_amortization(loan_amount, monthly_mortgage, monthly_interest_rate, length_of_mortgage);
         jQuery('#total').val(localeString(monthly_mortgage));
+
+        calculate_tanggungan();
 
         var loan_amount = parseFloat(jQuery('#amount').val());
         var dp = parseFloat(jQuery('#downp').val()) / 100;
@@ -342,14 +344,9 @@
         var downpaymentcalc = loan_amount * dp;
 
         var pkkhtcalc = loan_amount - (loan_amount * dp);
-        //console.log("ekaa", downpaymentcalc);
         jQuery('#totaldp').val(localeString(downpaymentcalc));
 
         jQuery('#pokokhutang').val(localeString(pkkhtcalc));
-    }
-
-    function calculateDP() {
-
     }
 
     function calculate_amortization(loan_amount, monthly_mortgage, monthly_interest_rate, length_of_mortgage) {
@@ -398,7 +395,7 @@
         };
 
         tablerow = "<tr> \
-					<td></td> \
+					<td><strong>Total</strong></td> \
 					<td></td> \
 					<td><strong>" + localeString(parseFloat(total_mortgage).toFixed(DIGIT_PRECISION)) + "</strong></td> \
 					<td><strong>" + localeString(parseFloat(total_principal).toFixed(DIGIT_PRECISION)) + "</strong></td> \
@@ -413,13 +410,69 @@
         }
         jQuery('table#amortization').html(tableData);
     }
+    
+    function calculate_monthly_payment_splitdp() {
+        // setting these as local variables...easier to read vs huge parse float equations.
+        
+        $('select').on('change', function () {
+            var loan_amount = parseFloat(jQuery('#amount').val());
+            var interest_rate = parseFloat(jQuery('#interest').val()) / 100;
+            var monthly_interest_rate = interest_rate / 12;
+            var oncange = "";
+            //console.log(this.value);
+            oncange = this.value;
+            console.log("ekachange", oncange);
 
-    function calculate_tanggunga(nloan_amount, monthly_mortgage, monthly_interest_rate, length_of_mortgage) {
 
-        var tableData = "<tr> \
-							<th>Bulan</th> \
-							<th>Tanggunan Supplier</th> \
-							</tr>";
+            //var length_of_mortgage = parseInt(jQuery('#term-years').val()) * 12;
+
+            var target = parseFloat(jQuery('#targetdp').val());
+            var dp = parseFloat(jQuery('#downp').val());
+
+            var ntfp = parseFloat(target - dp).toFixed(DIGIT_PRECISION);
+            var ntfp100 = parseFloat(ntfp / 100).toFixed(DIGIT_PRECISION);
+            var ntf = parseFloat(ntfp100 * loan_amount).toFixed(DIGIT_PRECISION);
+
+            //if (jQuery('select[id=monthly-yearly]').val() == 'months') {
+            //    length_of_mortgage = parseInt(jQuery('#term-months').val());
+            //};
+
+            // begin the formula for calculate the fixed monthly payment
+            // REFERENCE: P = L[c(1 + c)n]/[(1 + c)n - 1]
+            var top_val = monthly_interest_rate * Math.pow((1 + monthly_interest_rate), oncange);
+            var bot_val = Math.pow((1 + monthly_interest_rate), (oncange)) - 1;
+            if (ROUND_DIGITS) {
+                var monthly_mortgage = parseFloat(ntf * (top_val / bot_val)).toFixed(DIGIT_PRECISION);
+            } else {
+                var monthly_mortgage = parseFloat(ntf * (top_val / bot_val));
+            }
+
+            calculate_amortization_splitdp(loan_amount, monthly_mortgage, monthly_interest_rate, oncange, ntf);
+            jQuery('#total').val(localeString(monthly_mortgage));
+
+            //console.log("eka222", ntf);
+
+            var loan_amount = parseFloat(jQuery('#amount').val());
+            var dp = parseFloat(jQuery('#downp').val()) / 100;
+
+            var pkkht = parseFloat(jQuery('#pokokhutang').val());
+
+            // Initializing the empty totals
+            var totaldp = parseFloat(0);
+
+            var downpaymentcalc = loan_amount * dp;
+
+            var pkkhtcalc = loan_amount - (loan_amount * dp);
+            jQuery('#totaldp').val(localeString(downpaymentcalc));
+
+            jQuery('#pokokhutang').val(localeString(pkkhtcalc));
+        });
+    }
+
+    function calculate_amortization_splitdp(loan_amount, monthly_mortgage, monthly_interest_rate, length_of_mortgage, ntf) {
+        var month = parseInt(jQuery('#month').val());
+        var year = parseInt(jQuery('#year').val());
+
 
         // Initializing the empty totals
         var total_mortgage = parseFloat(0);
@@ -427,15 +480,76 @@
         var total_interest = parseFloat(0);
 
         for (i = length_of_mortgage; i > 0; i--) {
-            var monthly_interest = parseFloat(loan_amount * monthly_interest_rate).toFixed(DIGIT_PRECISION);
+            var monthly_interest = parseFloat(ntf * monthly_interest_rate).toFixed(DIGIT_PRECISION);
             var monthly_principal = parseFloat(monthly_mortgage - monthly_interest).toFixed(DIGIT_PRECISION);
             total_mortgage = parseFloat(total_mortgage) + parseFloat(monthly_mortgage);
             total_principal = parseFloat(total_principal) + parseFloat(monthly_principal);
             total_interest = parseFloat(total_interest) + parseFloat(monthly_interest);
+
+            
+            console.log("eksplit", monthly_mortgage, monthly_interest, ntf, monthly_split, length_of_mortgage, total_interest)
+            
             var monthStr = convert_month(month);
+
+            if (month == 12) {
+                month = 1;
+                year++;
+            }
+            else {
+                month++;
+            };
+
+            ntf = parseFloat(ntf - monthly_principal).toFixed(DIGIT_PRECISION);
+        };
+
+        monthly_split = total_interest / length_of_mortgage;
+
+        console.log("ekamonth", monthly_split);
+
+        if (ROUND_DIGITS) {
+            //jQuery('#subsidibunga').val(localeString(parseFloat(total_interest).toFixed(DIGIT_PRECISION)));
+            jQuery('#subsidibunga').val(localeString(parseFloat(total_interest).toFixed(DIGIT_PRECISION)));
+        } else {
+            //jQuery('#subsidibunga').val(localeString(parseFloat(total_interest)));
+            jQuery('#subsidibunga').val(localeString(parseFloat(total_interest)));
+        }
+    }
+
+
+    function calculate_tanggungan(bulandp) {
+        var month = parseInt(jQuery('#month').val());
+        var year = parseInt(jQuery('#year').val());
+
+        var loan_amount = parseFloat(jQuery('#amount').val());
+        var target = parseFloat(jQuery('#targetdp').val());
+        var dp = parseFloat(jQuery('#downp').val());
+        var prgdp = parseFloat(jQuery('#prgdp').val());
+        
+        //var a = param;
+
+        var tableData = "<tr> \
+							<th>Bulan</th> \
+							<th>Tanggungan</th> \
+						</tr>";
+
+        // Initializing the empty totals
+        var total_tanggungan = parseFloat(0);
+
+        var ntfp = parseFloat(target - dp).toFixed(DIGIT_PRECISION);
+        var ntfp100 = parseFloat(ntfp / 100).toFixed(DIGIT_PRECISION);
+        var ntf = parseFloat(ntfp100 * loan_amount).toFixed(DIGIT_PRECISION);
+        var pokok_int = parseFloat(ntf / bulandp).toFixed(DIGIT_PRECISION);
+
+        //console.log("ek6", pokok_int);
+
+        for (i = bulandp; i > 0; i--) {
+            var monthStr = convert_month(month);
+
+            total_tanggungan = parseFloat(pokok_int) * parseFloat(bulandp);
+
             var tablerow = "<tr> \
-					<td>" + monthStr + "</td> \
-					<td>" + localeString(parseFloat(loan_amount).toFixed(DIGIT_PRECISION)) + "</td> \
+					<td>" + monthStr + " " + year + "</td> \
+					<td>" + localeString(parseFloat(pokok_int).toFixed(DIGIT_PRECISION)) + "</td> \
 					</tr>";
 
             tableData = tableData + tablerow;
@@ -448,24 +562,15 @@
                 month++;
             };
 
-            loan_amount = parseFloat(loan_amount - monthly_principal).toFixed(DIGIT_PRECISION);
         };
 
         tablerow = "<tr>\
-					<td></td>\
-					<td></td>\
-					<td><strong>" + localeString(parseFloat(total_mortgage).toFixed(DIGIT_PRECISION)) + "</strong></td> \
-					<td><strong>" + localeString(parseFloat(total_principal).toFixed(DIGIT_PRECISION)) + "</strong></td>\
-					<td><strong>" + localeString(parseFloat(total_interest).toFixed(DIGIT_PRECISION)) + "</strong></td>\
+					<td><strong>Total</strong></td> \
+					<td><strong>" + localeString(parseFloat(total_tanggungan).toFixed(DIGIT_PRECISION)) + "</strong></td>\
 					</tr>";
         tableData = tableData + tablerow;
-        jQuery('h3#amortization-header').html('Amortization Schedule');
-        if (ROUND_DIGITS) {
-            jQuery('#total_interest').val(localeString(parseFloat(total_interest).toFixed(DIGIT_PRECISION)));
-        } else {
-            jQuery('#total_interest').val(localeString(parseFloat(total_interest)));
-        }
-        jQuery('table#amortization').html(tableData);
+        jQuery('h3#tanggungan-header').html('Tanggungan Supplier');
+        jQuery('table#tanggungansupp').html(tableData);
     }
 
     jQuery('select[id=monthly-yearly]').change(function () {
@@ -483,7 +588,8 @@
     });
 
     jQuery('#start-date, #amount, #interest, #term-years, #term-months').keyup(calculate_monthly_payment);
-    jQuery('#amount', 'downp').keyup(calculateDP);
+    jQuery('#start-date, #amount, #interest, #term-years, #term-months').keyup(calculate_monthly_payment_splitdp);
+    jQuery('#bulandp, #amount, #interest').keyup(calculate_tanggungan);
     jQuery('#mortgageForm :checkbox').change(function () {
         if ($(this).is(':checked')) {
             ROUND_DIGITS = false;
