@@ -12,7 +12,7 @@
         }
 
         input {
-            height: 30px !important;
+            height: 10px !important;
         }
 
         tr {
@@ -260,12 +260,20 @@
 <script>
 
     //var param = "";
+    var monthlypembiayaan = 0.00;
 
     function getComboA(selectObject) {
         var value = selectObject.value;
         //param = selectObject;
         //console.log(value);
         calculate_tanggungan(value);
+    }
+
+    function loop(tenor) {
+        for (var i = 0; i < tenor; i++) {
+            var number = i;
+        }
+        return i;
     }
 
     // Digits to round to
@@ -292,70 +300,102 @@
     }
 
     function convert_month(month) {
-        if (month == 1) { month = "January"; }
-        else if (month == 2) { month = "February"; }
-        else if (month == 3) { month = "March"; }
-        else if (month == 4) { month = "April"; }
+        if (month == 1) { month = "Jan"; }
+        else if (month == 2) { month = "Feb"; }
+        else if (month == 3) { month = "Mar"; }
+        else if (month == 4) { month = "Apr"; }
         else if (month == 5) { month = "May"; }
-        else if (month == 6) { month = "June"; }
-        else if (month == 7) { month = "July"; }
-        else if (month == 8) { month = "August"; }
-        else if (month == 9) { month = "September"; }
-        else if (month == 10) { month = "October"; }
-        else if (month == 11) { month = "November"; }
-        else if (month == 12) { month = "December"; }
+        else if (month == 6) { month = "Jun"; }
+        else if (month == 7) { month = "Jul"; }
+        else if (month == 8) { month = "Aug"; }
+        else if (month == 9) { month = "Sep"; }
+        else if (month == 10) { month = "Oct"; }
+        else if (month == 11) { month = "Nov"; }
+        else if (month == 12) { month = "Dec"; }
         return month;
     }
 
     function calculate_monthly_payment() {
-        // setting these as local variables...easier to read vs huge parse float equations.
-        var loan_amount = parseFloat(jQuery('#amount').val());
-        var interest_rate = parseFloat(jQuery('#interest').val()) / 100;
-        var monthly_interest_rate = interest_rate / 12;
-        var length_of_mortgage = parseInt(jQuery('#term-years').val()) * 12;
+        $('select').on('change', function () {
+            var tenor_splitdp = this.value;
+            //console.log("ektenor", tenor_splitdp);
+            // setting these as local variables...easier to read vs huge parse float equations.
+            var loan_amount = parseFloat(jQuery('#amount').val());
+            var interest_rate = parseFloat(jQuery('#interest').val()) / 100;
+            var monthly_interest_rate = interest_rate / 12;
 
-        if (jQuery('select[id=monthly-yearly]').val() == 'months') {
-            length_of_mortgage = parseInt(jQuery('#term-months').val());
-        };
+            var target = parseFloat(jQuery('#targetdp').val());
+            var dp = parseFloat(jQuery('#downp').val());
 
-        // begin the formula for calculate the fixed monthly payment
-        // REFERENCE: P = L[c(1 + c)n]/[(1 + c)n - 1]
-        var top_val = monthly_interest_rate * Math.pow((1 + monthly_interest_rate), length_of_mortgage);
-        var bot_val = Math.pow((1 + monthly_interest_rate), (length_of_mortgage)) - 1;
-        if (ROUND_DIGITS) {
-            var monthly_mortgage = parseFloat(loan_amount * (top_val / bot_val)).toFixed(DIGIT_PRECISION);
-        } else {
-            var monthly_mortgage = parseFloat(loan_amount * (top_val / bot_val));
-        } 
+            var total_interest = parseFloat(0);
 
-        calculate_amortization(loan_amount, monthly_mortgage, monthly_interest_rate, length_of_mortgage);
-        jQuery('#total').val(localeString(monthly_mortgage));
+            var ntfp = parseFloat(target - dp).toFixed(DIGIT_PRECISION);
+            var ntfp100 = parseFloat(ntfp / 100).toFixed(DIGIT_PRECISION);
+            var ntf = parseFloat(ntfp100 * loan_amount).toFixed(DIGIT_PRECISION);
+            
+            var length_of_mortgage = parseInt(jQuery('#term-years').val()) * 12;
+
+            var subsidi_split = parseFloat(0);
+            var monthly_interest = parseFloat(ntf * monthly_interest_rate).toFixed(DIGIT_PRECISION);
+            subsidi_split = parseFloat(subsidi_split) + parseFloat(monthly_interest);
+
+            if (jQuery('select[id=monthly-yearly]').val() == 'months') {
+                length_of_mortgage = parseInt(jQuery('#term-months').val());
+            };
+
+            // begin the formula for calculate the fixed monthly payment
+            // REFERENCE: P = L[c(1 + c)n]/[(1 + c)n - 1]
+            var top_val = monthly_interest_rate * Math.pow((1 + monthly_interest_rate), length_of_mortgage);
+            var bot_val = Math.pow((1 + monthly_interest_rate), (length_of_mortgage)) - 1;
+            var top_val_splitdp = monthly_interest_rate * Math.pow((1 + monthly_interest_rate), tenor_splitdp);
+            var bot_val_splitdp = Math.pow((1 + monthly_interest_rate), (tenor_splitdp)) - 1;
+
+            if (ROUND_DIGITS) {
+                var monthly_mortgage = parseFloat(loan_amount * (top_val / bot_val)).toFixed(DIGIT_PRECISION);
+                var monthly_mortgage_splitdp = parseFloat(ntf * (top_val_splitdp / bot_val_splitdp)).toFixed(DIGIT_PRECISION);
+            } else {
+                var monthly_mortgage = parseFloat(loan_amount * (top_val / bot_val));
+                var monthly_mortgage_splitdp = parseFloat(ntf * (top_val_splitdp / bot_val_splitdp));
+            }
+
+            calculate_amortization(loan_amount, monthly_mortgage, monthly_interest_rate, length_of_mortgage, tenor_splitdp, subsidi_split, monthly_mortgage_splitdp, ntf);
+            jQuery('#total').val(localeString(monthly_mortgage));
+
+            var pkkht = parseFloat(jQuery('#pokokhutang').val());
+
+            // Initializing the empty totals
+            var totaldp = parseFloat(0);
+
+            var downpaymentcalc = loan_amount * dp;
+
+            var pkkhtcalc = loan_amount - (loan_amount * dp);
+            jQuery('#totaldp').val(localeString(downpaymentcalc));
+
+            jQuery('#pokokhutang').val(localeString(pkkhtcalc));
+        })
 
         calculate_tanggungan();
+        }
 
-        var loan_amount = parseFloat(jQuery('#amount').val());
-        var dp = parseFloat(jQuery('#downp').val()) / 100;
-
-        var pkkht = parseFloat(jQuery('#pokokhutang').val());
-
-        // Initializing the empty totals
-        var totaldp = parseFloat(0);
-
-        var downpaymentcalc = loan_amount * dp;
-
-        var pkkhtcalc = loan_amount - (loan_amount * dp);
-        jQuery('#totaldp').val(localeString(downpaymentcalc));
-
-        jQuery('#pokokhutang').val(localeString(pkkhtcalc));
-    }
-
-    function calculate_amortization(loan_amount, monthly_mortgage, monthly_interest_rate, length_of_mortgage) {
+    function calculate_amortization(loan_amount, monthly_mortgage, monthly_interest_rate, length_of_mortgage, tenorSubsidiDP, subsidi_split, monthly_mortgage_splitdp, ntf) {
         var month = parseInt(jQuery('#month').val());
         var year = parseInt(jQuery('#year').val());
+
+        var target = parseFloat(jQuery('#targetdp').val());
+        var dp = parseFloat(jQuery('#downp').val());
+
+        var subsidibungavalue = jQuery('#subsidibunga').val();
+        let output = parseFloat(subsidibungavalue.replace(/,/g, ''));
+
+        var angsuransplitdp = (ntf / tenorSubsidiDP) + (output / tenorSubsidiDP);
+        //console.log("tai", output, ntf, angsuransplitdp);
 
         var tableData = "<tr> \
 							<th>Month</th> \
 							<th>Outstanding</th> \
+                            <th>Split DP</th> \
+                            <th>Subsidi Bunga</th> \
+                            <th>Pembiayaan</th> \
 							<th>Angsuran</th> \
 							<th>Pokok</th> \
 							<th>Bunga</th> \
@@ -365,21 +405,56 @@
         var total_mortgage = parseFloat(0);
         var total_principal = parseFloat(0);
         var total_interest = parseFloat(0);
+        var total_interestsplitdp = parseFloat(0);
+        
+        var lastTenorSubsidiDP = length_of_mortgage - tenorSubsidiDP;
+        
+        //console.log("ekaluar1", ntf);
 
         for (i = length_of_mortgage; i > 0; i--) {
+
+            let count = length_of_mortgage - (length_of_mortgage - 1);
             var monthly_interest = parseFloat(loan_amount * monthly_interest_rate).toFixed(DIGIT_PRECISION);
+
             var monthly_principal = parseFloat(monthly_mortgage - monthly_interest).toFixed(DIGIT_PRECISION);
+
             total_mortgage = parseFloat(total_mortgage) + parseFloat(monthly_mortgage);
             total_principal = parseFloat(total_principal) + parseFloat(monthly_principal);
             total_interest = parseFloat(total_interest) + parseFloat(monthly_interest);
+
+            //count += 1;
+            console.log("count", count);
+            var tai = 0.0;
+            var angsd = 0.0;
+            var subsidiBunga = 0.0;
+            var total_tanggungan = parseFloat(0);
+            var subsidi_split = parseFloat(0);
+            //count = parseInt(count + 1);
+            subsidi_split = parseFloat(subsidi_split) + parseFloat(monthly_interest);
+            //monthly_split = total_interestsplitdp / tenorSubsidiDP;
+
+            for (j = length_of_mortgage; j > lastTenorSubsidiDP; j--) {
+                if (i == j) { //x panjang tenor subsidi bunga
+
+                    angsd = angsuransplitdp;
+                    subsidiBunga = output / tenorSubsidiDP; //diisi nilai subsidi bunga
+                    
+                }
+            }
+
+            tai = parseFloat(monthlypembiayaan) + parseFloat(angsd);
+
             var monthStr = convert_month(month);
             var tablerow = "<tr> \
 					<td>" + monthStr + " " + year + "</td> \
 					<td>" + localeString(parseFloat(loan_amount).toFixed(DIGIT_PRECISION)) + "</td> \
-					<td>" + localeString(monthly_mortgage) + "</td> \
+                    <td>" + localeString(parseFloat(angsd).toFixed(DIGIT_PRECISION)) + "</td> \
+                    <td>" + localeString(parseFloat(subsidiBunga).toFixed(DIGIT_PRECISION)) + "</td> \
+                    <td>" + localeString(parseFloat(monthlypembiayaan).toFixed(DIGIT_PRECISION)) + "</td> \
+					<td>" + localeString(parseFloat(tai).toFixed(DIGIT_PRECISION)) + "</td> \
 					<td>" + localeString(monthly_principal) + "</td> \
 					<td>" + localeString(monthly_interest) + "</td> \
-					</tr>";
+			</tr>";
 
             tableData = tableData + tablerow;
 
@@ -394,9 +469,17 @@
             loan_amount = parseFloat(loan_amount - monthly_principal).toFixed(DIGIT_PRECISION);
         };
 
+        let output1 = parseFloat(monthly_mortgage) + parseFloat(angsd);
+        //console.log("taiiiiiiiiiiiii", output1);
+
+        monthly_split = total_interestsplitdp / tenorSubsidiDP;
+
         tablerow = "<tr> \
 					<td><strong>Total</strong></td> \
 					<td></td> \
+                    <td></td> \
+                    <td><strong>" + localeString(parseFloat(output).toFixed(DIGIT_PRECISION)) + "</strong></td> \
+                    <td></td> \
 					<td><strong>" + localeString(parseFloat(total_mortgage).toFixed(DIGIT_PRECISION)) + "</strong></td> \
 					<td><strong>" + localeString(parseFloat(total_principal).toFixed(DIGIT_PRECISION)) + "</strong></td> \
 					<td><strong>" + localeString(parseFloat(total_interest).toFixed(DIGIT_PRECISION)) + "</strong></td> \
@@ -421,7 +504,7 @@
             var oncange = "";
             //console.log(this.value);
             oncange = this.value;
-            console.log("ekachange", oncange);
+            //console.log("ekachange", oncange);
 
 
             //var length_of_mortgage = parseInt(jQuery('#term-years').val()) * 12;
@@ -439,6 +522,9 @@
 
             // begin the formula for calculate the fixed monthly payment
             // REFERENCE: P = L[c(1 + c)n]/[(1 + c)n - 1]
+
+            //console.log("ekahead2", ntf);
+
             var top_val = monthly_interest_rate * Math.pow((1 + monthly_interest_rate), oncange);
             var bot_val = Math.pow((1 + monthly_interest_rate), (oncange)) - 1;
             if (ROUND_DIGITS) {
@@ -446,11 +532,16 @@
             } else {
                 var monthly_mortgage = parseFloat(ntf * (top_val / bot_val));
             }
+            var subsidi_split = parseFloat(0);
 
-            calculate_amortization_splitdp(loan_amount, monthly_mortgage, monthly_interest_rate, oncange, ntf);
+            var monthly_interest = parseFloat(ntf * monthly_interest_rate).toFixed(DIGIT_PRECISION);
+            subsidi_split = parseFloat(subsidi_split) + parseFloat(monthly_interest);
+
+            //console.log("ekainside2", subsidi_split, ntfp, ntfp100, ntf, target, dp);
+            calculate_amortization_splitdp(loan_amount, monthly_mortgage, monthly_interest_rate, oncange, ntf, subsidi_split);
             jQuery('#total').val(localeString(monthly_mortgage));
 
-            //console.log("eka222", ntf);
+            
 
             var loan_amount = parseFloat(jQuery('#amount').val());
             var dp = parseFloat(jQuery('#downp').val()) / 100;
@@ -469,10 +560,9 @@
         });
     }
 
-    function calculate_amortization_splitdp(loan_amount, monthly_mortgage, monthly_interest_rate, length_of_mortgage, ntf) {
+    function calculate_amortization_splitdp(loan_amount, monthly_mortgage, monthly_interest_rate, length_of_mortgage, ntf, subsidi_split) {
         var month = parseInt(jQuery('#month').val());
         var year = parseInt(jQuery('#year').val());
-
 
         // Initializing the empty totals
         var total_mortgage = parseFloat(0);
@@ -481,14 +571,12 @@
 
         for (i = length_of_mortgage; i > 0; i--) {
             var monthly_interest = parseFloat(ntf * monthly_interest_rate).toFixed(DIGIT_PRECISION);
+
             var monthly_principal = parseFloat(monthly_mortgage - monthly_interest).toFixed(DIGIT_PRECISION);
             total_mortgage = parseFloat(total_mortgage) + parseFloat(monthly_mortgage);
             total_principal = parseFloat(total_principal) + parseFloat(monthly_principal);
             total_interest = parseFloat(total_interest) + parseFloat(monthly_interest);
 
-            
-            console.log("eksplit", monthly_mortgage, monthly_interest, ntf, monthly_split, length_of_mortgage, total_interest)
-            
             var monthStr = convert_month(month);
 
             if (month == 12) {
@@ -501,20 +589,132 @@
 
             ntf = parseFloat(ntf - monthly_principal).toFixed(DIGIT_PRECISION);
         };
-
+        
+        //console.log("ekasplit", total_principal);
         monthly_split = total_interest / length_of_mortgage;
 
-        console.log("ekamonth", monthly_split);
-
         if (ROUND_DIGITS) {
-            //jQuery('#subsidibunga').val(localeString(parseFloat(total_interest).toFixed(DIGIT_PRECISION)));
             jQuery('#subsidibunga').val(localeString(parseFloat(total_interest).toFixed(DIGIT_PRECISION)));
         } else {
-            //jQuery('#subsidibunga').val(localeString(parseFloat(total_interest)));
             jQuery('#subsidibunga').val(localeString(parseFloat(total_interest)));
         }
     }
 
+    function calculate_monthly_payment_pembiayaan() {
+        // setting these as local variables...easier to read vs huge parse float equations.
+
+        $('select').on('change', function () {
+            var loan_amount = parseFloat(jQuery('#amount').val());
+            var interest_rate = parseFloat(jQuery('#interest').val()) / 100;
+            var monthly_interest_rate = interest_rate / 12;
+            var oncange = "";
+            oncange = this.value;
+
+            var target = parseFloat(jQuery('#targetdp').val());
+            var dp = parseFloat(jQuery('#downp').val());
+
+            var ntfp = parseFloat(100 - target).toFixed(DIGIT_PRECISION);
+            var ntfp100 = parseFloat(ntfp / 100).toFixed(DIGIT_PRECISION);
+            var ntf = parseFloat(ntfp100 * loan_amount).toFixed(DIGIT_PRECISION);
+
+            var length_of_mortgage = parseInt(jQuery('#term-years').val()) * 12;
+
+            var subsidi_split = parseFloat(0);
+            var monthly_interest = parseFloat(ntf * monthly_interest_rate).toFixed(DIGIT_PRECISION);
+            subsidi_split = parseFloat(subsidi_split) + parseFloat(monthly_interest);
+
+            if (jQuery('select[id=monthly-yearly]').val() == 'months') {
+                length_of_mortgage = parseInt(jQuery('#term-months').val());
+            };
+
+            //console.log("ekapembiayaan", ntf, length_of_mortgage);
+
+            var top_val = monthly_interest_rate * Math.pow((1 + monthly_interest_rate), length_of_mortgage);
+            var bot_val = Math.pow((1 + monthly_interest_rate), (length_of_mortgage)) - 1;
+            if (ROUND_DIGITS) {
+                var monthly_mortgage = parseFloat(ntf * (top_val / bot_val)).toFixed(DIGIT_PRECISION);
+            } else {
+                var monthly_mortgage = parseFloat(ntf * (top_val / bot_val));
+            }
+            var subsidi_split = parseFloat(0);
+
+            var monthly_interest = parseFloat(ntf * monthly_interest_rate).toFixed(DIGIT_PRECISION);
+            subsidi_split = parseFloat(subsidi_split) + parseFloat(monthly_interest);
+
+            calculate_amortization_pembiayaan(ntf, monthly_mortgage, monthly_interest_rate, length_of_mortgage, 0, subsidi_split);
+            var loan_amount = parseFloat(jQuery('#amount').val());
+            var dp = parseFloat(jQuery('#downp').val()) / 100;
+
+            var pkkht = parseFloat(jQuery('#pokokhutang').val());
+
+            // Initializing the empty totals
+            var totaldp = parseFloat(0);
+
+            var downpaymentcalc = loan_amount * dp;
+
+            var pkkhtcalc = loan_amount - (loan_amount * dp);
+        });
+    }
+
+    function calculate_amortization_pembiayaan(loan_amount, monthly_mortgage, monthly_interest_rate, length_of_mortgage, ntf, subsidi_split) {
+        var month = parseInt(jQuery('#month').val());
+        var year = parseInt(jQuery('#year').val());
+
+        var target = parseFloat(jQuery('#targetdp').val());
+        var dp = parseFloat(jQuery('#downp').val());
+
+        var subsidibungavalue = jQuery('#subsidibunga').val();
+        let output = parseFloat(subsidibungavalue.replace(/,/g, ''));
+
+        var angsuransplitdp = (ntf / length_of_mortgage) + (output / length_of_mortgage);
+        console.log("tai", output, ntf, angsuransplitdp);
+
+        // Initializing the empty totals
+        var total_mortgage = parseFloat(0);
+        var total_principal = parseFloat(0);
+        var total_interest = parseFloat(0);
+        var total_interestsplitdp = parseFloat(0);
+
+        var lastTenorSubsidiDP = length_of_mortgage - length_of_mortgage;
+
+        //console.log("ekapemb2", loan_amount, monthly_interest_rate, length_of_mortgage);
+
+        for (i = length_of_mortgage; i > 0; i--) {
+
+            var monthly_interest = parseFloat(loan_amount * monthly_interest_rate).toFixed(DIGIT_PRECISION);
+
+            var monthly_principal = parseFloat(monthly_mortgage - monthly_interest).toFixed(DIGIT_PRECISION);
+
+            total_mortgage = parseFloat(total_mortgage) + parseFloat(monthly_mortgage);
+            total_principal = parseFloat(total_principal) + parseFloat(monthly_principal);
+            total_interest = parseFloat(total_interest) + parseFloat(monthly_interest);
+
+            var angsd = 0.0;
+            var subsidiBunga = 0.0;
+            var total_tanggungan = parseFloat(0);
+            var subsidi_split = parseFloat(0);
+
+            subsidi_split = parseFloat(subsidi_split) + parseFloat(monthly_interest);
+            //monthly_split = total_interestsplitdp / tenorSubsidiDP;
+
+            var monthStr = convert_month(month);
+
+            if (month == 12) {
+                month = 1;
+                year++;
+            }
+            else {
+                month++;
+            };
+            
+            loan_amount = parseFloat(loan_amount - monthly_principal).toFixed(DIGIT_PRECISION);
+        };
+
+        monthlypembiayaan = monthly_mortgage;
+        console.log("ekz", monthlypembiayaan, monthly_interest);
+        //console.log("ekapemb", total_principal, total_interest, total_mortgage, loan_amount)
+        monthly_split = total_interestsplitdp / length_of_mortgage;
+    }
 
     function calculate_tanggungan(bulandp) {
         var month = parseInt(jQuery('#month').val());
@@ -574,8 +774,6 @@
     }
 
     jQuery('select[id=monthly-yearly]').change(function () {
-        //jQuery("#term-months").val("");
-        //jQuery("#term-years").val("");
 
         if ($(this).val() == 'months') {
             jQuery('#years-field').hide();
@@ -589,6 +787,7 @@
 
     jQuery('#start-date, #amount, #interest, #term-years, #term-months').keyup(calculate_monthly_payment);
     jQuery('#start-date, #amount, #interest, #term-years, #term-months').keyup(calculate_monthly_payment_splitdp);
+    jQuery('#start-date, #amount, #interest, #term-years, #term-months').keyup(calculate_monthly_payment_pembiayaan);
     jQuery('#bulandp, #amount, #interest').keyup(calculate_tanggungan);
     jQuery('#mortgageForm :checkbox').change(function () {
         if ($(this).is(':checked')) {

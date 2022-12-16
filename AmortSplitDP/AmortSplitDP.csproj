@@ -198,12 +198,22 @@
     <Content Include="Account\ResetPasswordConfirmation.aspx" />
     <Content Include="Account\TwoFactorAuthenticationSignIn.aspx" />
     <Content Include="Account\VerifyPhoneNumber.aspx" />
+    <Content Include="Calculation.aspx" />
     <Content Include="Contact.aspx" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\Site.css" />
     <Content Include="css\bootstrap-responsive.min.css" />
     <Content Include="css\bootstrap.min.css" />
+    <Content Include="css\custom.css" />
+    <Content Include="css\daterangepicker.css" />
+    <Content Include="css\font-awesome.min.css" />
+    <Content Include="css\green.css" />
+    <Content Include="css\nprogress.css" />
+    <Content Include="css\prettify.min.css" />
+    <Content Include="css\select2.min.css" />
+    <Content Include="css\starrr.css" />
+    <Content Include="css\switchery.min.css" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
     <Content Include="fonts\glyphicons-halflings-regular.ttf" />
@@ -213,8 +223,26 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
+    <Content Include="images\img.jpg" />
+    <Content Include="js\autosize.min.js" />
+    <Content Include="js\bootstrap-progressbar.min.js" />
+    <Content Include="js\bootstrap-wysiwyg.min.js" />
     <Content Include="js\bootstrap.min.js" />
+    <Content Include="js\daterangepicker.js" />
+    <Content Include="js\fastclick.js" />
+    <Content Include="js\icheck.min.js" />
+    <Content Include="js\jquery.autocomplete.min.js" />
+    <Content Include="js\jquery.hotkeys.js" />
     <Content Include="js\jquery.js" />
+    <Content Include="js\jquery.min.js" />
+    <Content Include="js\jquery.tagsinput.js" />
+    <Content Include="js\moment.min.js" />
+    <Content Include="js\nprogress.js" />
+    <Content Include="js\parsley.min.js" />
+    <Content Include="js\prettify.js" />
+    <Content Include="js\select2.full.min.js" />
+    <Content Include="js\starrr.js" />
+    <Content Include="js\switchery.js" />
     <Content Include="Mortgage.aspx" />
     <Content Include="Scripts\ai.0.22.9-build00167.js" />
     <Content Include="Scripts\ai.0.22.9-build00167.min.js" />
@@ -382,6 +410,13 @@
     <Compile Include="App_Start\IdentityConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
+    <Compile Include="Calculation.aspx.cs">
+      <DependentUpon>Calculation.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Calculation.aspx.designer.cs">
+      <DependentUpon>Calculation.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Contact.aspx.cs">
       <DependentUpon>Contact.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
